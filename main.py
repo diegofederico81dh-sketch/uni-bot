@@ -1,10 +1,9 @@
-import requests, time, os, threading
+import os, time, requests
 from flask import Flask
+import threading
 
-TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
-UNI_HIGH = 9.0
-UNI_LOW = 8.5
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
 app = Flask(__name__)
 
@@ -12,22 +11,24 @@ app = Flask(__name__)
 def home():
     return "Bot UNI activo"
 
-def check_price():
+def check_uni():
     while True:
         try:
-            r = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=UNIUSDT").json()
-            price = float(r['price'])
+            # Precio de UNI
+            r = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=UNIUSDT", timeout=10)
+            price = float(r.json()['price'])
             print(f"UNI: {price}")
-            if TOKEN and CHAT_ID:
-                if price >= UNI_HIGH:
-                    requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text=🚀 UNI en ${price} - VENDE!")
-                if price <= UNI_LOW:
-                    requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text=📉 UNI en ${price} - COMPRA!")
+            
+            if price <= 9.25:
+                msg = f"🔴 UNI = ${price} - VENDE!"
+                requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}")
+            
+            time.sleep(60)
         except Exception as e:
             print(e)
-        time.sleep(60)
+            time.sleep(60)
 
-threading.Thread(target=check_price, daemon=True).start()
+threading.Thread(target=check_uni, daemon=True).start()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
