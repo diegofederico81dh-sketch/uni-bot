@@ -1,7 +1,7 @@
 import requests, time, os, threading
 from flask import Flask
 
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
+TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 UNI_HIGH = 9.0
 UNI_LOW = 8.5
